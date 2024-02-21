@@ -4,10 +4,110 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>new page</title>
+	<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+	<style>
+
+		*{
+			border: none;
+		}
+
+		.fullContainer {
+		    display: flex;
+		    align-items: center;
+		    justify-content: center;
+		    height: 100vh;
+		}
+
+		.mainContainer{
+			display: flex;
+			justify-content: center;
+			flex-direction: column;
+			border: 2px black solid;
+			height: 270px;
+			width: 400px;
+		}
+
+		.usernameContainer{
+			margin: 10px;
+			height: 50px;
+			width: 375px;
+			border: 2px solid black;
+		}
+
+		.usernameInput, .passwordInput{
+			width: 350px;
+			height: 24px;
+			margin: 10px;
+/*			border: 2px black solid;*/
+		}
+
+		.usernameInput:focus, .passwordInput:focus{
+			outline: none;
+		}
+
+
+		.passwordContainer{
+			margin: 10px;
+			height: 50px;
+			width: 375px;
+			border: 2px solid black;
+		}
+
+		#submitButton{
+			width: 380px;
+			height: 50px;
+			margin: 10px;
+			cursor: pointer;
+		}
+
+	</style>
 </head>
 <body>
-	<h1>hello</h1>
+	<div class='fullContainer'>
+		<div class="mainContainer">
+			<div class="usernameContainer">
+				<input type="text" name="username" class="usernameInput" placeholder="Username">
+			</div>
 
-	<h2><%= locals.name %></h2>
+			<div class="passwordContainer">
+				<input type="password" name="password" class="passwordInput" placeholder="Password">
+			</div>
+
+			<button id="submitButton" type="submit" onclick="signup()">Submit</button>
+			
+		</div>
+		
+	</div>
+	
+
+	<script>
+
+		function signup(){
+	    
+		    const Us = document.querySelector('.usernameInput').value;
+		    const pass = document.querySelector('.passwordInput').value;
+		    const data = {
+		    	username: Us,
+		    	password: pass
+		    }
+		    console.log(data)
+		    const jsondata = JSON.stringify(data)
+		    console.log(jsondata)
+
+		    axios.post('/submit', jsondata,{
+			    headers: {
+			        'Content-Type': 'application/json',
+			    }
+			})
+		        .then(response => {
+		            console.log(response.data);
+		        })
+		        .catch(error => {
+		            console.error('Error:', error);
+		        });
+			};
+	
+		
+	</script>
 </body>
 </html> 
