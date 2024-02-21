@@ -23,18 +23,24 @@
 			justify-content: center;
 			flex-direction: column;
 			border: 2px black solid;
-			height: 270px;
+			height: 320px;
 			width: 400px;
 		}
 
-		.usernameContainer{
+		.textClass{
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+
+		.usernameContainer, .emailContainer{
 			margin: 10px;
 			height: 50px;
 			width: 375px;
 			border: 2px solid black;
 		}
 
-		.usernameInput, .passwordInput{
+		.usernameInput, .passwordInput, .emailInput{
 			width: 350px;
 			height: 24px;
 			margin: 10px;
@@ -65,12 +71,16 @@
 <body>
 	<div class='fullContainer'>
 		<div class="mainContainer">
-			<div class="usernameContainer">
-				<input type="text" name="username" class="usernameInput" placeholder="Username">
+			<div class="textClass">
+				<h2 style=>Login</h2>
 			</div>
 
 			<div class="passwordContainer">
 				<input type="password" name="password" class="passwordInput" placeholder="Password">
+			</div>
+
+			<div class="emailContainer">
+				<input type="email" name="email" class="emailInput" placeholder="Email">
 			</div>
 
 			<button id="submitButton" type="submit" onclick="signup()">Submit</button>
@@ -83,29 +93,28 @@
 	<script>
 
 		function signup(){
-	    
-		    const Us = document.querySelector('.usernameInput').value;
 		    const pass = document.querySelector('.passwordInput').value;
+		    const email = document.querySelector('.emailInput').value;
 		    const data = {
-		    	username: Us,
-		    	password: pass
+		    	password: pass,
+		    	ema: email
 		    }
 		    console.log(data)
 		    const jsondata = JSON.stringify(data)
 		    console.log(jsondata)
 
-		    axios.post('/submit', jsondata,{
+		    axios.post('/login', jsondata,{
 			    headers: {
 			        'Content-Type': 'application/json',
 			    }
 			})
-		        .then(response => {
-		            console.log(response.data);
-		        })
-		        .catch(error => {
-		            console.error('Error:', error);
-		        });
-			};
+	        .then(response => {
+	            console.log(response.data);
+	        })
+	        .catch(error => {
+	            console.error('Error:', error);
+	        });
+		};
 	
 		
 	</script>
