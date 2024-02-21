@@ -7,7 +7,18 @@ import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import fetchuser from './middleware/fetchuser.js'
 
+
+
+app.use(bodyParser.json());
+app.use(express.urlencoded({extended:true}))
+app.set('view engine', "ejs");
+
+
+
+
 const jwtSecret = '!@#$QWERqwer1234'
+
+
 
 mongoose.connect('mongodb://127.0.0.1:27017/allUsers') // Last part is a Database
 .then(() => {
@@ -32,14 +43,27 @@ const userSchema = new mongoose.Schema({
 	}
 })
 
+const notesSchema = new mongoose.Schema({
+    usermail: {
+        type: String,
+        required: true
+    },
+    notes: {
+        type: [String], 
+        default: []
+    }
+});
+
+
 const User = mongoose.model('user',userSchema); // the word inside the quotes is the collection
+const Notes = mongoose.model('allnotes',notesSchema)
+
+
+
+
 
 
 console.log(User)
-
-app.use(bodyParser.json());
-app.use(express.urlencoded({extended:false}))
-app.set('view engine', "ejs");
 
 app.get('/signup', (req,res) => {
 	console.log('received request for signup page')
@@ -79,11 +103,13 @@ app.post('/signup', async (req, res, next) => {
             email: data.email
         });
 
+        await Notes.create({
+        	usermail: data.email,
+        	notes: []
+        })
 
-        const tokenData = {
-        	id: email
-        }
-        const token = await jwt.sign(tokenData, jwtSecret)
+        const token = await jwt.sign(data.email, jwtSecret)
+
         const returnData = {
         	name: User.fullName,
         	email: User.email,
@@ -93,6 +119,7 @@ app.post('/signup', async (req, res, next) => {
         	status: 'User created successfully',
         	response:returnData
         }
+
 
         console.log('Created a new user:', newUser);
         return res.status(200).json(finalData);
@@ -155,6 +182,24 @@ app.post('/userdata', fetchuser, async (req,res,next) => {
 	catch(error){
 		res.status(401).json({error:"internal server error"})
 	}
+})
+
+app.post('/addnotes', fetchuser, async(req,res,next) => {
+	try{
+		console.log("req.user " + req.user)
+		const useremail = req.user
+		const user = await Notes.findOne({usermail:useremail})
+		console.log("user: " + user)
+		const newNotes = req.body.notes
+		console.log(newNotes)
+		user.notes = newNotes
+		await user.save()
+		res.status(200).json({msg:"Got the notes",notes:newNotes})
+
+	}
+	catch(error){
+		res.status(401).json({error:"internal server error"})
+	}	
 })
 
 
