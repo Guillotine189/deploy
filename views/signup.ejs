@@ -23,7 +23,7 @@
 			justify-content: center;
 			flex-direction: column;
 			border: 2px black solid;
-			height: 320px;
+			height: 360px;
 			width: 400px;
 		}
 		.textClass{
@@ -47,7 +47,7 @@
 /*			border: 2px black solid;*/
 		}
 
-		.usernameInput:focus, .passwordInput:focus{
+		.usernameInput:focus, .passwordInput:focus, .emailInput:focus{
 			outline: none;
 		}
 
@@ -65,7 +65,11 @@
 			margin: 10px;
 			cursor: pointer;
 		}
-
+		.aContainer{
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
 	</style>
 </head>
 <body>
@@ -87,7 +91,9 @@
 			</div>
 
 			<button id="submitButton" type="submit" onclick="signup()">Submit</button>
-			
+						<div class="aContainer">
+				<a href="/login">Log in</a>
+			</div>
 		</div>
 		
 	</div>
@@ -116,12 +122,19 @@
 			})
 	        .then(response => {
 	            console.log(response.data);
+	            const data = response.data
+	            if(response.status === 200){
+		            localStorage.setItem('name', data.name);
+		            localStorage.setItem('auth-token', data['auth-token']);
+		            localStorage.setItem('email', data.email);
+		            window.location.href = '/home';
+	            }
 	        })
 	        .catch(error => {
 	            console.error('Error:', error);
 	        });
 		};
-	
+
 		
 	</script>
 </body>

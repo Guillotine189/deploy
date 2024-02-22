@@ -23,7 +23,7 @@
 			justify-content: center;
 			flex-direction: column;
 			border: 2px black solid;
-			height: 320px;
+			height: 330px;
 			width: 400px;
 		}
 
@@ -47,7 +47,7 @@
 /*			border: 2px black solid;*/
 		}
 
-		.usernameInput:focus, .passwordInput:focus{
+		.usernameInput:focus, .passwordInput:focus, .emailInput:focus{
 			outline: none;
 		}
 
@@ -64,6 +64,11 @@
 			height: 50px;
 			margin: 10px;
 			cursor: pointer;
+		}
+		.aContainer{
+			display: flex;
+			align-items: center;
+			justify-content: center;
 		}
 
 	</style>
@@ -83,7 +88,11 @@
 				<input type="email" name="email" class="emailInput" placeholder="Email">
 			</div>
 
-			<button id="submitButton" type="submit" onclick="signup()">Submit</button>
+			<button id="submitButton" type="submit" onclick="login()">Submit</button>
+			<div class="aContainer">
+				<a href="/signup">sign up</a>
+			</div>
+			
 			
 		</div>
 		
@@ -92,7 +101,7 @@
 
 	<script>
 
-		function signup(){
+		function login(){
 		    const pass = document.querySelector('.passwordInput').value;
 		    const email = document.querySelector('.emailInput').value;
 		    const data = {
@@ -110,11 +119,20 @@
 			})
 	        .then(response => {
 	            console.log(response.data);
+	            const data = response.data
+	            if(response.status === 200){
+		            localStorage.setItem('name', data.name);
+		            localStorage.setItem('auth-token', data['auth-token']);
+		            localStorage.setItem('email', data.email);
+		            window.location.href = '/home';
+	            }
 	        })
 	        .catch(error => {
 	            console.error('Error:', error);
 	        });
 		};
+
+
 	
 		
 	</script>

@@ -8,7 +8,6 @@ import jwt from 'jsonwebtoken'
 import fetchuser from './middleware/fetchuser.js'
 
 
-
 app.use(bodyParser.json());
 app.use(express.urlencoded({extended:true}))
 app.set('view engine', "ejs");
@@ -60,21 +59,31 @@ const Notes = mongoose.model('allnotes',notesSchema)
 
 
 
-
+// in get request axios.get('path', {header: {}})
+// in post request axios.post('path',{body},{header:{}})
 
 
 console.log(User)
 
 app.get('/signup', (req,res) => {
 	console.log('received request for signup page')
-	res.render('signup', {name: "Sarthak"})
+	res.render('signup')
 })
 
 app.get('/login', (req,res) => {
 	console.log('received request for login page')
-	res.render('login', {name: "Sarthak"})
+	res.render('login')
 })
 
+
+app.get('/home', async (req,res) => {
+	try{
+		res.render('homepage')
+
+	}catch(error){
+		res.sendStatus(500).json({response:"Internal server error"})
+	}
+})
 
 
 app.post('/signup', async (req, res, next) => {
@@ -91,7 +100,7 @@ app.post('/signup', async (req, res, next) => {
 
         if (existingUsers.length > 0) {
             console.log('User with this email already exists');
-            return res.status(400).json({ error: 'User with this username already exists' });
+            return res.status(400).json({ error: 'User with this email already exists' });
         }
 
         const salt = await bcrypt.genSalt(10);
@@ -111,18 +120,13 @@ app.post('/signup', async (req, res, next) => {
         const token = await jwt.sign(data.email, jwtSecret)
 
         const returnData = {
-        	name: User.fullName,
-        	email: User.email,
+        	name: data.username,
+        	email: data.email,
         	'auth-token': token
         }
-        const finalData = {
-        	status: 'User created successfully',
-        	response:returnData
-        }
-
 
         console.log('Created a new user:', newUser);
-        return res.status(200).json(finalData);
+        return res.status(200).json(returnData);
     } catch (error) {
         console.error('Error creating user:', error);
         return res.status(500).json({ error: 'Something went wrong' });
@@ -169,6 +173,8 @@ app.post('/login', async (req, res, next) => {
     }
 });
 
+
+
  
 app.post('/userdata', fetchuser, async (req,res,next) => {
 	console.log('got user data request')
@@ -184,22 +190,51 @@ app.post('/userdata', fetchuser, async (req,res,next) => {
 	}
 })
 
+
+app.post('/sendnotes', fetchuser, async(req,res,next) => {
+	console.log('SEND NOTES REQUEST')
+	try{
+		const userMail = req.user
+		console.log('USER IS REQUESTING NOTES ' + userMail)
+		const user = await Notes.findOne({usermail:userMail})
+		console.log('FOUND USER DATA ' + user)
+		const notes = user.notes
+		res.status(200).json({response:{'notes':notes}})
+	}
+	catch(error){
+		res.status(401).json({error:"internal server error"})
+	}	
+})
+
 app.post('/addnotes', fetchuser, async(req,res,next) => {
 	try{
 		console.log("req.user " + req.user)
 		const useremail = req.user
 		const user = await Notes.findOne({usermail:useremail})
 		console.log("user: " + user)
-		const newNotes = req.body.notes
+		console.log('RESPONSE BODY ' + req.body)
+		const newNotes = req.body.notes // whatever the notes are in the payload, just put that as the notes in database
 		console.log(newNotes)
 		user.notes = newNotes
 		await user.save()
-		res.status(200).json({msg:"Got the notes",notes:newNotes})
+		res.status(200).json({response:{msg:"Got the notes",notes:newNotes}})
 
 	}
 	catch(error){
 		res.status(401).json({error:"internal server error"})
 	}	
+})
+
+app.post('/temp', fetchuser, async (req,res,next) => {
+
+		const useremail = req.user
+		const user = await User.findOne({email:useremail}).select('-password')
+		if(!user){
+			res.sendStatus(400).json({response:"User not found"})
+		}
+		console.log('FOUND USER: ' + user)
+		console.log('received request to open home page for ' + user.fullName)
+
 })
 
 

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>new page</title>
+	<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+	<style>
+
+		*{
+			border: none;
+		}
+
+		.fullContainer {
+		    display: flex;
+		    align-items: center;
+		    justify-content: center;
+		    height: 100vh;
+		    flex-direction: column;
+		}
+		.textClass{
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+
+		.notesContainer{
+			height: 330px;
+			width: 400px;
+			border: solid 2px black;
+			display: flex;
+			flex-direction: column;
+		}
+
+		.top{
+			border: solid 2px black;
+			flex:1;
+			display: flex;
+			justify-content: space-around;
+			align-items: center;
+		}
+
+		.searchbar{
+			border: solid 2px black;
+			width: 80%;
+			height: 60%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.inputBar{
+			width: 95%;
+			height: 80%;
+		}
+
+		.addIcon{
+			border: solid 2px black;
+			width: 10%;
+			height: 60%;
+			cursor: pointer;
+		}
+
+		.bottom{
+			border: solid 2px black;
+			flex: 5;
+			display: flex;
+			align-items: center;
+/*			justify-content: space-evenly;*/
+			flex-direction: column;
+			overflow-y: scroll;
+			overflow-x: hidden;
+		}
+
+		.oneRow{
+			display: flex;
+			align-items: center;
+			justify-content: space-around;
+			min-width: 100%;
+			min-height: 70px;
+			max-height: 70px;
+			margin: 10px;
+/*			border: solid 2px blue;*/
+		}
+
+		.individualNote{
+/*			border: solid 2px black;*/
+			height: 90%;
+			width: 90%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+		.actualNote{
+			height: 80%;
+			width: 90%;
+			border: solid 2px black;
+		}
+
+		.completedImage{
+			margin: 10px;
+			border: solid 2px black;
+			height: 90%;
+			width: 10%;
+			cursor: pointer;
+		}
+
+		.deleteImage{
+			margin: 5px;
+			border: solid 2px black;
+			height: 90%;
+			width: 10%;
+			cursor: pointer;
+		}
+
+
+	</style>
+</head>
+<body>
+	<div class='fullContainer'>
+		<div class="mainContainer">
+			<div class="textClass">
+				<h2 class='welcomeclass' style=>Welcome <%= locals.name %></h2>
+			</div>
+			<div class="notesContainer">
+				<div class="top">
+					<div class="searchbar">
+						<input class="inputBar" type="text" name="note" placeholder="Add todo here">
+					</div>
+					<img src="" class="addIcon" onclick="addNotes()">
+					
+				</div>
+				<div class="bottom">
+
+					<div class="oneRow">
+						<div class="individualNote">
+							<div class="actualNote">
+							ls
+							</div>
+						</div>
+						<img class='completedImage' src="">
+						<img class='deleteImage' src="">
+					</div>
+
+				</div>
+				
+			</div>
+
+		</div>
+		<div style="cursor: pointer;color: blue;" onclick="logout()">Log out</div>
+		
+	</div>
+	
+
+	<script>	
+
+		window.onload = function(){
+
+			update();
+			fetchUserData();
+			fetchNotes();
+		}
+
+		let AllNotes = []
+
+		function update(){
+		    let teg = document.querySelector('.welcomeclass');
+		    teg.innerText = "Welcome " + localStorage.getItem('name') || ''; // Corrected spelling of innerText
+		    console.log(teg.innerText);
+		}
+
+		function fetchUserData(){
+			const token = localStorage.getItem('auth-token')
+			axios.post('/userdata',{},{
+				headers:{
+					'auth-token': token,
+					'Content-Type': 'application/json',
+				}
+			})
+			.then(response => {
+				console.log(response.data)
+			})
+			.catch(error => {
+				console.log('Some error accoured fetching the data' + error)
+			})
+
+		}
+
+		function fetchNotes(){
+			const token = localStorage.getItem('auth-token')
+			axios.post('/sendnotes',{},{
+				headers:{
+					'auth-token': token,
+					'Content-Type': 'application/json',
+				}
+			})
+			.then(response => {
+				// console.log(response.data)
+				console.log(response.data)
+				updateNotes(response.data)
+			})
+			.catch(error => {
+				console.log('Some error accoured fetching the data' + error)
+			})
+		}
+
+
+		// <div class="oneRow">
+		// 	<div class="individualNote">
+		// 		<div id=0 class="actualNote">
+		// 		ls
+		// 		</div>
+		// 	</div>
+		// 	<img class='completedImage' src="">
+		// 	<img class='deleteImage' src="">
+		// </div>
+
+		function updateNotes(response){ // response is {notes: []}
+
+			console.log(response.response.notes)
+			if(response.response.notes.length == 0){
+				console.log('Empty notes')
+				document.querySelector('.bottom').innerHTML = 'No todo'
+				return
+			}
+			const bottomElement = document.querySelector('.bottom')
+			bottomElement.innerHTML = ''
+			AllNotes = [];
+			let count = 0;
+			response.response.notes.forEach((note)=>{
+				console.log(note)
+
+				const rowElement = document.createElement('div')
+				rowElement.className = 'oneRow'
+
+				const individualelement = document.createElement('div')
+				individualelement.className = 'individualNote'
+
+				const noteElement = document.createElement('div')
+				noteElement.className = 'actualNote'
+				noteElement.innerText = note
+				noteElement.id = count
+				count = count + 1
+				AllNotes.push(note)
+
+
+
+				const completedElement = document.createElement('img')
+				completedElement.className = 'completedImage'
+
+				const deteleImageElement = document.createElement('img')
+				deteleImageElement.className = 'deleteImage'
+				deteleImageElement.addEventListener('mousedown',function(event){removeNote(event,noteElement.id)})
+
+				individualelement.appendChild(noteElement)
+				individualelement.appendChild(completedElement)
+				individualelement.appendChild(deteleImageElement)
+
+				rowElement.appendChild(individualelement)
+				bottomElement.appendChild(rowElement)
+
+			})
+
+		}
+
+		function removeNote(event,id){
+			AllNotes.splice(id,1);
+			console.log("ALL notes before sending" + AllNotes)
+			// AllNotes = [];
+			let data = {'notes':AllNotes}
+			data = JSON.stringify(data)
+			console.log(data)
+
+			const token = localStorage.getItem('auth-token')
+			axios.post('/addnotes',data,{
+				headers:{
+					'auth-token': token,
+					'Content-Type': 'application/json',
+				}
+			})
+			.then(response => {
+				console.log(response.data)
+				updateNotes(response.data)
+			})
+			.catch(error => {
+				console.log('Some error accoured fetching the data' + error)
+			})
+		}
+
+		function addNotes(){
+			const noteElement =  document.querySelector('.inputBar');
+			const notes = noteElement.value;
+			if(notes.length == 0){
+				console.log('No todo written')
+				return
+			}
+
+			// This is what server accept
+			//{
+			//   "notes": ["THIS IS NOTE 1","This is note 2"]
+			// }
+
+			noteElement.value = ''
+			AllNotes.splice(0,0,notes)
+			console.log("ALL notes before sending" + AllNotes)
+			// AllNotes = [];
+			let data = {'notes':AllNotes}
+			data = JSON.stringify(data)
+			console.log(data)
+
+			const token = localStorage.getItem('auth-token')
+			axios.post('/addnotes',data,{
+				headers:{
+					'auth-token': token,
+					'Content-Type': 'application/json',
+				}
+			})
+			.then(response => {
+				console.log(response.data)
+				updateNotes(response.data)
+			})
+			.catch(error => {
+				console.log('Some error accoured fetching the data' + error)
+			})
+		}
+
+		function logout(){
+			localStorage.clear();
+			axios.get('/login',{},{
+
+			})
+			.then(response => window.location.href = '/login')
+			.catch(error => console.log(error))
+		}
+
+		
+	</script>
+</body>
+</html> 
