@@ -6,7 +6,9 @@ import mongoose from 'mongoose'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import fetchuser from './middleware/fetchuser.js'
+import dotenv from 'dotenv'
 
+dotenv.config()
 
 app.use(bodyParser.json());
 app.use(express.urlencoded({extended:true}))
@@ -18,13 +20,13 @@ app.set('view engine', "ejs");
 const jwtSecret = '!@#$QWERqwer1234'
 
 
-
-mongoose.connect('mongodb://127.0.0.1:27017/allUsers') // Last part is a Database
-.then(() => {
-	console.log('Mongoose database connected')
+console.log(process.env.MONGO_URL)
+mongoose.connect(process.env.MONGO_URL) 
+.then((response) => {
+	console.log('Mongoose database connected: ' + response)
 })
-.catch(() => {
-	console.log('Failed to connect to mongodb')
+.catch((error) => {
+	console.log('Failed to connect to mongodb: ' + error)
 })
 
 const userSchema = new mongoose.Schema({
@@ -62,8 +64,6 @@ const Notes = mongoose.model('allnotes',notesSchema)
 // in get request axios.get('path', {header: {}})
 // in post request axios.post('path',{body},{header:{}})
 
-
-console.log(User)
 
 app.get('/signup', (req,res) => {
 	console.log('received request for signup page')
