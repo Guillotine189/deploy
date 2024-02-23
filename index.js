@@ -69,6 +69,11 @@ const Notes = mongoose.model('allnotes',notesSchema)
 // in post request axios.post('path',{body},{header:{}})
 
 
+app.get('/', (req,res) => {
+	console.log('received request for choice page')
+	res.render('root')
+})
+
 app.get('/signup', (req,res) => {
 	console.log('received request for signup page')
 	res.render('signup')
