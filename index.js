@@ -24,8 +24,8 @@ app.set('view engine', "ejs");
 const jwtSecret = '!@#$QWERqwer1234'
 
 
-mongoose.connect('mongodb://127.0.0.1:27017/allUsers')
-// mongoose.connect(process.env.MONGO_URL) 
+// mongoose.connect('mongodb://127.0.0.1:27017/allUsers')
+mongoose.connect(process.env.MONGO_URL) 
 .then((response) => {
 	console.log('Mongoose database connected: ' + response)
 })
