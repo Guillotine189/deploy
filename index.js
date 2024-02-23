@@ -7,9 +7,13 @@ import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import fetchuser from './middleware/fetchuser.js'
 import dotenv from 'dotenv'
+import multer from 'multer'
+// import path form 'path'
+
 
 dotenv.config()
 
+app.use(express.static('images'))
 app.use(bodyParser.json());
 app.use(express.urlencoded({extended:true}))
 app.set('view engine', "ejs");
@@ -20,8 +24,8 @@ app.set('view engine', "ejs");
 const jwtSecret = '!@#$QWERqwer1234'
 
 
-console.log(process.env.MONGO_URL)
-mongoose.connect(process.env.MONGO_URL) 
+mongoose.connect('mongodb://127.0.0.1:27017/allUsers')
+// mongoose.connect(process.env.MONGO_URL) 
 .then((response) => {
 	console.log('Mongoose database connected: ' + response)
 })
@@ -77,12 +81,25 @@ app.get('/login', (req,res) => {
 
 
 app.get('/home', async (req,res) => {
+	const imagePath = [
+		'../add.png',
+		'../completed.png',
+		'../notcompleted.png',
+		'../delete.jpg',
+		];
 	try{
-		res.render('homepage')
+		res.render('homepage',{imagePath})
 
 	}catch(error){
 		res.sendStatus(500).json({response:"Internal server error"})
 	}
+})
+
+
+app.get('/images/', async (req,res,next) => {
+	console.log('RECEIVED REQUEST FOR AN IMAGE')
+	console.log(req.route.path)
+
 })
 
 
@@ -250,7 +267,7 @@ app.use('/spam', (req, res, next) => {
     next(); // Pass control to the next middleware function
 });
  
-app.listen(5001, () => {
+app.listen(5002, () => {
 	console.log('server started');
 }) 
 

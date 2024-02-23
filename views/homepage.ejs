@@ -41,7 +41,8 @@
 		}
 
 		.searchbar{
-			border: solid 2px black;
+			border: solid 1px black;
+			border-radius: 10px;
 			width: 80%;
 			height: 60%;
 			display: flex;
@@ -53,11 +54,14 @@
 			width: 95%;
 			height: 80%;
 		}
+		.inputBar:focus{
+			outline: none;
+		}
 
 		.addIcon{
-			border: solid 2px black;
-			width: 10%;
-			height: 60%;
+/*			border: solid 2px black;*/
+			width: 25px;
+			height: 25px;
 			cursor: pointer;
 		}
 
@@ -85,31 +89,35 @@
 
 		.individualNote{
 /*			border: solid 2px black;*/
+			border: 1px black solid;
+			border-radius: 10px;
 			height: 90%;
 			width: 90%;
 			display: flex;
 			align-items: center;
 			justify-content: center;
+			margin: 5px;
 		}
+
 		.actualNote{
 			height: 80%;
 			width: 90%;
-			border: solid 2px black;
+/*			border: solid 2px black;*/
 		}
 
 		.completedImage{
 			margin: 10px;
-			border: solid 2px black;
-			height: 90%;
-			width: 10%;
+/*			border: solid 2px b/lack;*/
+			width: 25px;
+			height: 25px;
 			cursor: pointer;
 		}
 
 		.deleteImage{
 			margin: 5px;
-			border: solid 2px black;
-			height: 90%;
-			width: 10%;
+/*			border: solid 2px black;*/
+			width: 30px;
+			height: 30px;
 			cursor: pointer;
 		}
 
@@ -127,7 +135,7 @@
 					<div class="searchbar">
 						<input class="inputBar" type="text" name="note" placeholder="Add todo here">
 					</div>
-					<img src="" class="addIcon" onclick="addNotes()">
+					<img src='<%= imagePath[0] %>' class="addIcon" onclick="addNotes()">
 					
 				</div>
 				<div class="bottom">
@@ -138,8 +146,8 @@
 							ls
 							</div>
 						</div>
-						<img class='completedImage' src="">
-						<img class='deleteImage' src="">
+						<img class='completedImage' src="completed.png" onclick="changeCompleted()">
+						<img class='deleteImage' src="delete.png">
 					</div>
 
 				</div>
@@ -228,35 +236,50 @@
 			AllNotes = [];
 			let count = 0;
 			response.response.notes.forEach((note)=>{
-				console.log(note)
+				console.log("INDIVIDUAL NOTE: " + note)
 
 				const rowElement = document.createElement('div')
 				rowElement.className = 'oneRow'
 
 				const individualelement = document.createElement('div')
 				individualelement.className = 'individualNote'
+				individualelement.id = count
 
 				const noteElement = document.createElement('div')
 				noteElement.className = 'actualNote'
-				noteElement.innerText = note
+				noteElement.innerText = note.slice(1); // get string from 1 to end
 				noteElement.id = count
+				
+				if (note.slice(0,1) == '1'){
+					individualelement.style.backgroundColor = '#dbf2d3';
+				}else{
+					individualelement.style.backgroundColor = 'white';
+				}
+
 				count = count + 1
 				AllNotes.push(note)
 
-
-
 				const completedElement = document.createElement('img')
 				completedElement.className = 'completedImage'
+				if(note.slice(0,1) == '1'){
+					completedElement.src = '<%= imagePath[2] %>'
+				}else{
+					completedElement.src = '<%= imagePath[1] %>'
+				}
+				completedElement.addEventListener('mousedown',function(event){changeCompleted(event,note.slice(0,1),individualelement.id)})
 
 				const deteleImageElement = document.createElement('img')
 				deteleImageElement.className = 'deleteImage'
+				deteleImageElement.src = '<%= imagePath[3] %>'
+
 				deteleImageElement.addEventListener('mousedown',function(event){removeNote(event,noteElement.id)})
 
 				individualelement.appendChild(noteElement)
-				individualelement.appendChild(completedElement)
-				individualelement.appendChild(deteleImageElement)
 
 				rowElement.appendChild(individualelement)
+				rowElement.appendChild(completedElement)
+				rowElement.appendChild(deteleImageElement)
+
 				bottomElement.appendChild(rowElement)
 
 			})
@@ -289,7 +312,7 @@
 
 		function addNotes(){
 			const noteElement =  document.querySelector('.inputBar');
-			const notes = noteElement.value;
+			let notes = noteElement.value;
 			if(notes.length == 0){
 				console.log('No todo written')
 				return
@@ -301,7 +324,10 @@
 			// }
 
 			noteElement.value = ''
+			notes = '0' + notes
+
 			AllNotes.splice(0,0,notes)
+
 			console.log("ALL notes before sending" + AllNotes)
 			// AllNotes = [];
 			let data = {'notes':AllNotes}
@@ -324,6 +350,65 @@
 			})
 		}
 
+		function changeCompleted(event,completedOrNot,id){
+
+			const token = localStorage.getItem('auth-token');
+			console.log('CLICKED TO CHNAGE COLOR')
+
+			if(completedOrNot == '0'){
+				AllNotes.splice(id,1,'1' + AllNotes[id].slice(1))
+				console.log('After clicking completed, new allTodo: ' + AllNotes)
+				let data = {'notes':AllNotes}
+				data = JSON.stringify(data)
+				console.log(data)
+
+				const token = localStorage.getItem('auth-token')
+				axios.post('/addnotes',data,{
+					headers:{
+						'auth-token': token,
+						'Content-Type': 'application/json',
+					}
+				})
+				.then(response => {
+					console.log(response.data)
+					updateNotes(response.data)
+				})
+				.catch(error => {
+					console.log('Some error accoured fetching the data' + error)
+				})
+			}else{
+				AllNotes.splice(id,1,'0' + AllNotes[id].slice(1))
+				console.log('After clicking completed, new allTodo: ' + AllNotes)
+				let data = {'notes':AllNotes}
+				data = JSON.stringify(data)
+				console.log(data)
+
+				const token = localStorage.getItem('auth-token')
+				axios.post('/addnotes',data,{
+					headers:{
+						'auth-token': token,
+						'Content-Type': 'application/json',
+					}
+				})
+				.then(response => {
+					console.log(response.data)
+					updateNotes(response.data)
+				})
+				.catch(error => {
+					console.log('Some error accoured fetching the data' + error)
+				})
+			}
+
+
+
+			const element = document.getElementById(id)
+			if (completedOrNot == '0'){
+				element.style.backgroundColor = '#dbf2d3';
+			}else{
+				element.style.backgroundColor = 'white';
+			}
+		}
+
 		function logout(){
 			localStorage.clear();
 			axios.get('/login',{},{
@@ -333,7 +418,6 @@
 			.catch(error => console.log(error))
 		}
 
-		// mongodb+srv://guillotine189:U5cyFRDzHfMoI14x@cluster0.weme3tp.mongodb.net/todo?retryWrites=true&w=majority&appName=Cluster0
 	</script>
 </body>
 </html> 
